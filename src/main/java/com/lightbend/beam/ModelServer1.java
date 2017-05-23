@@ -6,6 +6,7 @@ import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.coders.ByteArrayCoder;
 import org.apache.beam.sdk.coders.KvCoder;
 import org.apache.beam.sdk.io.kafka.KafkaIO;
+import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.transforms.Flatten;
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.ParDo;
@@ -25,8 +26,9 @@ public class ModelServer1 {
     public static void main(String[] args) {
 
         // Create and initialize pipeline
-        Pipeline p = JobConfiguration.initializePipeline(args);
-        KafkaOptions options = p.getOptions().as(KafkaOptions.class);
+        KafkaOptions options = PipelineOptionsFactory.fromArgs(args).withValidation()
+                .as(KafkaOptions.class);
+        Pipeline p = Pipeline.create(options);
 
         // Coder to use for Kafka data - raw byte message
         KvCoder<byte[], byte[]> kafkaDataCoder = KvCoder.of(ByteArrayCoder.of(), ByteArrayCoder.of());

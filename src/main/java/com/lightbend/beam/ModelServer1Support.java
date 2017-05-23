@@ -5,11 +5,11 @@ import com.lightbend.model.Modeldescriptor;
 import com.lightbend.model.PMMLModel;
 import com.lightbend.model.Winerecord;
 import org.apache.beam.sdk.coders.SerializableCoder;
+import org.apache.beam.sdk.state.StateSpec;
+import org.apache.beam.sdk.state.StateSpecs;
+import org.apache.beam.sdk.state.ValueState;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.SimpleFunction;
-import org.apache.beam.sdk.util.state.StateSpec;
-import org.apache.beam.sdk.util.state.StateSpecs;
-import org.apache.beam.sdk.util.state.ValueState;
 import org.apache.beam.sdk.values.KV;
 
 import java.io.ByteArrayInputStream;
@@ -152,7 +152,7 @@ public class ModelServer1Support {
 
         // Internal state
         @StateId("model")
-        private final StateSpec<Object, ValueState<Model>> modelSpec =
+        private final StateSpec<ValueState<Model>> modelSpec =
                 StateSpecs.value(SerializableCoder.of(Model.class));
 
 

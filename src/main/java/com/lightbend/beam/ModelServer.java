@@ -9,6 +9,7 @@ import org.apache.beam.sdk.coders.ByteArrayCoder;
 import org.apache.beam.sdk.coders.KvCoder;
 import org.apache.beam.sdk.coders.SerializableCoder;
 import org.apache.beam.sdk.io.kafka.KafkaIO;
+import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.transforms.*;
 import org.apache.beam.sdk.transforms.windowing.AfterWatermark;
 import org.apache.beam.sdk.transforms.windowing.FixedWindows;
@@ -31,27 +32,13 @@ public class ModelServer {
     public static void main(String[] args) {
 
         // Create and initialize pipeline
-        Pipeline p = JobConfiguration.initializePipeline(args);
-        KafkaOptions options = p.getOptions().as(KafkaOptions.class);
+        KafkaOptions options = PipelineOptionsFactory.fromArgs(args).withValidation().as(KafkaOptions.class);
+        Pipeline p = Pipeline.create(options);
 
         KvCoder<byte[], byte[]> kafkaDataCoder = KvCoder.of(ByteArrayCoder.of(), ByteArrayCoder.of());
         SerializableCoder<Model> modelsCoder = SerializableCoder.of(Model.class);
 
         // Data Stream
-/*        PCollection<Winerecord.WineRecord> dataStream = p
-                .apply("data", KafkaIO.readBytes()
-                        .withBootstrapServers(options.getBroker())
-                        .withTopics(Arrays.asList(options.getKafkaDataTopic()))
-                        .updateConsumerProperties(JobConfiguration.getKafkaConsumerProps(options, true))
-                        .withoutMetadata()).setCoder(kafkaDataCoder)
-                // Group into fixed-size windows
-                .apply(Window.<KV<byte[], byte[]>>into(FixedWindows.of(
-                        Duration.standardSeconds(1)))
-                        .triggering(AfterWatermark.pastEndOfWindow()).
-                                withAllowedLateness(Duration.ZERO)
-                        .discardingFiredPanes())
-                .apply("Parse data records", ParDo.of(new DataRecordProcessor.ConvertDataRecordFunction()));*/
-
         PCollection<KV<String,Iterable<Winerecord.WineRecord>>> dataStream = p
                 .apply("data", KafkaIO.readBytes()
                         .withBootstrapServers(options.getBroker())
@@ -86,10 +73,10 @@ public class ModelServer {
         // Build a model view to use as a side input
         PCollectionView<Model> models = modelStream
                 .apply("building model state",
-                        Combine.globally(new ModelRecordProcessor.ModelFromEventsFn()).withoutDefaults().asSingletonView());
+                        Combine.globally(new ModelRecordProcessor.ModelFromEventsFn()).asSingletonView());
 
         PCollection<Double> scoringResults = dataStream
-                .apply("Scoring the model", ParDo.withSideInputs(models).of(
+                .apply("Scoring the model", ParDo.of(
                         new DoFn<KV<String,Iterable<Winerecord.WineRecord>>, Double>(){
 
                     @ProcessElement
@@ -110,7 +97,8 @@ public class ModelServer {
                             }
                         }
                     };
-                }));
+                }).withSideInputs(models));
+
         p.run();
     }
 }

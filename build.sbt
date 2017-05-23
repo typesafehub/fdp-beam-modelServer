@@ -5,7 +5,7 @@ version := "1.0"
 
 scalaVersion := "2.10.6"
 
-lazy val flinkBeamRunner = "0.6.0"
+lazy val flinkBeamRunner = "2.0.0"
 lazy val kafka = "0.10.0.1"
 
 lazy val tensorflow = "1.1.0"
@@ -20,9 +20,11 @@ PB.targets in Compile := Seq(
 
 libraryDependencies ++= Seq(
   "org.apache.beam" % "beam-runners-flink_2.10" % flinkBeamRunner,
-//  "org.apache.flink" % "flink-connector-kafka-0.10_2.10" % flinkVersion,
   "org.apache.beam" % "beam-runners-direct-java" % flinkBeamRunner,
   "org.apache.beam" % "beam-sdks-java-io-kafka" % flinkBeamRunner,
+  "org.apache.beam" % "beam-sdks-java-extensions-join-library" % flinkBeamRunner,
+  "org.apache.beam" % "beam-sdks-common-fn-api" % flinkBeamRunner,
+  "org.apache.beam" % "beam-sdks-java-extensions-protobuf" % flinkBeamRunner,
   "org.apache.curator" % "curator-test" % "3.2.0",
   "org.apache.kafka" % "kafka_2.10" % kafka,
   "org.apache.kafka" % "kafka-clients" % kafka,
