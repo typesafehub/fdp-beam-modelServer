@@ -1,14 +1,12 @@
 package com.lightbend.kafka;
 
 import org.apache.beam.runners.flink.FlinkRunner;
-import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * Created by boris on 5/17/17.
@@ -57,7 +55,7 @@ public class JobConfiguration {
 
         return props;
     }
-
+/*
     public static Properties getKafkaConsumerProp(KafkaOptions options, boolean data) {
 
         Properties props = new Properties();
@@ -74,14 +72,14 @@ public class JobConfiguration {
 
         return props;
     }
-
+*/
     /**
      * Initializes some options for the Flink runner.
      *
      * @param args The command line args
      * @return the pipeline
      */
-    public static Pipeline initializePipeline(String[] args) {
+    public static KafkaOptions initializePipeline(String[] args) {
         KafkaOptions options = PipelineOptionsFactory.fromArgs(args).as(KafkaOptions.class);
         // Use Flink runner
         options.setRunner(FlinkRunner.class);
@@ -95,6 +93,6 @@ public class JobConfiguration {
         options.setNumberOfExecutionRetries(5);
         options.setExecutionRetryDelay(3000L);
 
-        return Pipeline.create(options);
+        return options;
     }
 }

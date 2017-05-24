@@ -26,8 +26,7 @@ public class ModelServer1 {
     public static void main(String[] args) {
 
         // Create and initialize pipeline
-        KafkaOptions options = PipelineOptionsFactory.fromArgs(args).withValidation()
-                .as(KafkaOptions.class);
+        KafkaOptions options = JobConfiguration.initializePipeline(args);
         Pipeline p = Pipeline.create(options);
 
         // Coder to use for Kafka data - raw byte message
