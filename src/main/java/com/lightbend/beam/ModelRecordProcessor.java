@@ -105,6 +105,9 @@ public class ModelRecordProcessor {
                 if (input.modelType.equals(Modeldescriptor.ModelDescriptor.ModelType.PMML)) {
                     try {
                         Model model = new PMMLModel(new ByteArrayInputStream(input.getContent()));
+                        // Clean up current model
+                        if(currentModel != null)
+                            currentModel.cleanup();
                         currentModel = model;
                     } catch (Throwable t) {
                         System.out.println("Failed to create model");

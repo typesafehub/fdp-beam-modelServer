@@ -162,6 +162,9 @@ public class ModelServer1Support {
             KV<String,DataWithModel> input = ctx.element();
             // Check if we got the model
             ModelDescriptor descriptor = input.getValue().getModel();
+            // Get current model
+            Model model = modelState.read();
+
             if(descriptor != null){
                 // Process model - store it
                 System.out.println("New scoring model " + descriptor);
@@ -170,6 +173,9 @@ public class ModelServer1Support {
                     // Check the model representation
                     if (descriptor.getModelType().equals(Modeldescriptor.ModelDescriptor.ModelType.PMML)) {
                         try {
+                            // Clean up current model, if necessary
+                            if(model != null)
+                                model.cleanup();
                             // Create and store the model
                             modelState.write(new PMMLModel(new ByteArrayInputStream(descriptor.getModelData())));
                         } catch (Throwable t) {
@@ -184,8 +190,6 @@ public class ModelServer1Support {
             }
             // Process data
             else{
-                // Get current model
-                Model model = modelState.read();
                 if(model == null)
                     // No model currently
                     System.out.println("No model available - skipping");
