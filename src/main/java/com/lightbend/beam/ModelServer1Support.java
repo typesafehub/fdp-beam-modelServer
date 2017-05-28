@@ -1,10 +1,7 @@
 package com.lightbend.beam;
 
-import com.lightbend.model.Model;
-import com.lightbend.model.Modeldescriptor;
-import com.lightbend.model.PMMLModel;
-import com.lightbend.model.Winerecord;
-import org.apache.beam.sdk.coders.SerializableCoder;
+import com.lightbend.coders.ModelCoder;
+import com.lightbend.model.*;
 import org.apache.beam.sdk.state.StateSpec;
 import org.apache.beam.sdk.state.StateSpecs;
 import org.apache.beam.sdk.state.ValueState;
@@ -12,7 +9,6 @@ import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.SimpleFunction;
 import org.apache.beam.sdk.values.KV;
 
-import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 
 /**
@@ -152,8 +148,7 @@ public class ModelServer1Support {
 
         // Internal state
         @StateId("model")
-        private final StateSpec<ValueState<Model>> modelSpec =
-                StateSpecs.value(SerializableCoder.of(Model.class));
+        private final StateSpec<ValueState<Model>> modelSpec = StateSpecs.value(ModelCoder.of());
 
 
         @ProcessElement
@@ -164,31 +159,18 @@ public class ModelServer1Support {
             ModelDescriptor descriptor = input.getValue().getModel();
             // Get current model
             Model model = modelState.read();
-
-            if(descriptor != null){
+            if(descriptor != null) {
                 // Process model - store it
                 System.out.println("New scoring model " + descriptor);
-                // Make sure that the model is recieved as data
-                if(descriptor.getModelData() != null) {
-                    // Check the model representation
-                    if (descriptor.getModelType().equals(Modeldescriptor.ModelDescriptor.ModelType.PMML)) {
-                        try {
-                            // Clean up current model, if necessary
-                            if(model != null)
-                                model.cleanup();
-                            // Create and store the model
-                            modelState.write(new PMMLModel(new ByteArrayInputStream(descriptor.getModelData())));
-                        } catch (Throwable t) {
-                            System.out.println("Failed to create model");
-                            t.printStackTrace();
-                        }
-                    } else
-                        System.out.println("Only PMML models are currently supported");
+                Model current = convertModel(descriptor);
+                if (current != null) {
+                    if (model != null)
+                        model.cleanup();
+                    // Create and store the model
+                    modelState.write(current);
                 }
-                else
-                    System.out.println("Location based model is not yet supported");
             }
-            // Process data
+             // Process data
             else{
                 if(model == null)
                     // No model currently
@@ -202,6 +184,33 @@ public class ModelServer1Support {
                     // Propagate result
                     ctx.output(quality);
                 }
+            }
+        }
+
+        private Model convertModel(ModelDescriptor descriptor){
+
+            if(descriptor.getModelData() == null) {
+                System.out.println("Location based model is not yet supported");
+                return null;
+            }
+            try {
+                Model current = null;
+                switch (descriptor.getModelType()){
+                    case PMML:
+                        current = new PMMLModel(descriptor.getModelData());
+                        break;
+                    case TENSORFLOW:
+                        current = new TensorModel(descriptor.getModelData());
+                        break;
+                    case UNRECOGNIZED:
+                        System.out.println("Only PMML and Tensorflow models are currently supported");
+                        break;
+                }
+                return current;
+            } catch (Throwable t) {
+                System.out.println("Failed to create model");
+                t.printStackTrace();
+                return null;
             }
         }
     }

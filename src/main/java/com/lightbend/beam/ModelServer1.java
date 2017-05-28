@@ -5,8 +5,8 @@ import com.lightbend.kafka.KafkaOptions;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.coders.ByteArrayCoder;
 import org.apache.beam.sdk.coders.KvCoder;
+import org.apache.beam.sdk.coders.NullableCoder;
 import org.apache.beam.sdk.io.kafka.KafkaIO;
-import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.transforms.Flatten;
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.ParDo;
@@ -30,7 +30,7 @@ public class ModelServer1 {
         Pipeline p = Pipeline.create(options);
 
         // Coder to use for Kafka data - raw byte message
-        KvCoder<byte[], byte[]> kafkaDataCoder = KvCoder.of(ByteArrayCoder.of(), ByteArrayCoder.of());
+        KvCoder<byte[], byte[]> kafkaDataCoder = KvCoder.of(NullableCoder.of(ByteArrayCoder.of()), ByteArrayCoder.of());
 
         // Data Stream - gets data records from Kafka topic
         // It has to use KV to work with state, which is always KV

@@ -8,7 +8,7 @@ import org.jpmml.evaluator.*;
 import org.jpmml.evaluator.visitors.*;
 import org.jpmml.model.PMMLUtil;
 
-import java.io.InputStream;
+import java.io.ByteArrayInputStream;
 import java.util.*;
 
 /**
@@ -40,9 +40,9 @@ public class PMMLModel implements Model {
     private List<InputField> inputFields;
     private Map<FieldName, FieldValue> arguments = new LinkedHashMap<>();
 
-    public PMMLModel(InputStream input) throws Throwable{
+    public PMMLModel(byte[] input) throws Throwable{
         // unmarshal PMML
-        PMML pmml = PMMLUtil.unmarshal(input);
+        PMML pmml = PMMLUtil.unmarshal(new ByteArrayInputStream(input));
         // Optimize model
         synchronized(this) {
             for (Visitor optimizer : optimizers) {

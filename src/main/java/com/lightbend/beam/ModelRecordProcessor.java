@@ -3,6 +3,7 @@ package com.lightbend.beam;
 import com.lightbend.model.Model;
 import com.lightbend.model.Modeldescriptor;
 import com.lightbend.model.PMMLModel;
+import com.lightbend.model.TensorModel;
 import org.apache.beam.sdk.coders.CannotProvideCoderException;
 import org.apache.beam.sdk.coders.Coder;
 import org.apache.beam.sdk.coders.CoderRegistry;
@@ -11,7 +12,6 @@ import org.apache.beam.sdk.transforms.Combine;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.values.KV;
 
-import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 
 /**
@@ -102,19 +102,28 @@ public class ModelRecordProcessor {
             @Override
             public void addInput(ModelToServe input) {
                 System.out.println("New model" + input);
-                if (input.modelType.equals(Modeldescriptor.ModelDescriptor.ModelType.PMML)) {
-                    try {
-                        Model model = new PMMLModel(new ByteArrayInputStream(input.getContent()));
+                Model model = null;
+                try {
+                    switch (input.modelType){
+                        case PMML:
+                            model = new PMMLModel(input.getContent());
+                            break;
+                        case TENSORFLOW:
+                            model = new TensorModel(input.getContent());
+                            break;
+                        case UNRECOGNIZED:
+                            System.out.println("Only PMML and Tensorflow models are currently supported");
+                            break;
+                    }
+                    if(model != null) {
                         // Clean up current model
-                        if(currentModel != null)
+                        if (currentModel != null)
                             currentModel.cleanup();
                         currentModel = model;
-                    } catch (Throwable t) {
-                        System.out.println("Failed to create model");
-                        t.printStackTrace();
                     }
-                } else {
-                    System.out.println("Only PMML models are currently supported");
+                } catch (Throwable t) {
+                    System.out.println("Failed to create model");
+                    t.printStackTrace();
                 }
             }
 

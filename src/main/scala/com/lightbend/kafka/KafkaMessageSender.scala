@@ -35,8 +35,7 @@ class KafkaMessageSender (brokers: String, zookeeper : String){
 
   // Write value to the queue
   def writeValue(topic: String, value: Array[Byte]): RecordMetadata = {
-    // Beam chokes on null key - provide a fake one
-    val result = producer.send(new ProducerRecord[Array[Byte], Array[Byte]](topic, "Key".getBytes(), value)).get
+    val result = producer.send(new ProducerRecord[Array[Byte], Array[Byte]](topic, null, value)).get
     producer.flush()
     result
   }
