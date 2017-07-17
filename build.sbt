@@ -5,31 +5,27 @@ version := "1.0"
 
 scalaVersion := "2.10.6"
 
-lazy val flinkBeamRunner = "2.0.0"
-lazy val kafka = "0.10.0.1"
+lazy val protobufs = (project in file("./protobufs"))
+  .settings(
+    PB.targets in Compile := Seq(
+      PB.gens.java -> (sourceManaged in Compile).value,
+      scalapb.gen(javaConversions=true) -> (sourceManaged in Compile).value
+    )
+  )
 
-lazy val tensorflow = "1.1.0"
-lazy val PMML = "1.3.5"
+lazy val client = (project in file("./client"))
+  .settings(libraryDependencies ++= Dependencies.kafkaDependencies)
+  .dependsOn(protobufs, configuration)
 
-PB.targets in Compile := Seq(
-  PB.gens.java -> (sourceManaged in Compile).value,
-  scalapb.gen(javaConversions=true) -> (sourceManaged in Compile).value
-)
+lazy val model = (project in file("./model"))
+  .settings(libraryDependencies ++= Dependencies.modelDependencies)
+  .dependsOn(protobufs)
 
-// dependencies
+lazy val server = (project in file("./server"))
+  .settings(libraryDependencies ++= Dependencies.kafkaDependencies ++ Dependencies.beamDependencies)
+  .dependsOn(model, configuration)
 
-libraryDependencies ++= Seq(
-  "org.apache.beam" % "beam-runners-flink_2.10" % flinkBeamRunner,
-  "org.apache.beam" % "beam-runners-direct-java" % flinkBeamRunner,
-  "org.apache.beam" % "beam-sdks-java-io-kafka" % flinkBeamRunner,
-  "org.apache.beam" % "beam-sdks-java-extensions-join-library" % flinkBeamRunner,
-  "org.apache.beam" % "beam-sdks-common-fn-api" % flinkBeamRunner,
-  "org.apache.beam" % "beam-sdks-java-extensions-protobuf" % flinkBeamRunner,
-  "org.apache.curator" % "curator-test" % "3.2.0",
-  "org.apache.kafka" % "kafka_2.10" % kafka,
-  "org.apache.kafka" % "kafka-clients" % kafka,
-  "org.tensorflow" % "tensorflow" % tensorflow,
-  "org.jpmml" % "pmml-evaluator" % PMML,
-  "org.jpmml" % "pmml-evaluator-extension" % PMML
-)
-        
+lazy val configuration = (project in file("./configuration"))
+
+lazy val root = (project in file(".")).
+  aggregate(protobufs, client, model, configuration, server)
