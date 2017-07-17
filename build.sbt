@@ -3,7 +3,7 @@ name := "BeamModelServer"
 
 version := "1.0"
 
-scalaVersion := "2.10.6"
+scalaVersion in ThisBuild := "2.10.6"
 
 lazy val protobufs = (project in file("./protobufs"))
   .settings(
