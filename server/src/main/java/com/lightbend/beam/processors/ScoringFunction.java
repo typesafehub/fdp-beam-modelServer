@@ -34,7 +34,7 @@ public class ScoringFunction extends DoFn<KV<String,DataWithModel>, Double> {
         // Get current element
         KV<String, DataWithModel> input = ctx.element();
         // Check if we got the model
-        CurrentModelDescriptor descriptor = input.getValue().getModel();
+        ModelToServe descriptor = input.getValue().getModel();
         // Get current model
         Model model = modelState.read();
         if (descriptor != null) {

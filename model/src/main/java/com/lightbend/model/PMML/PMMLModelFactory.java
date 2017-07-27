@@ -1,6 +1,6 @@
 package com.lightbend.model.PMML;
 
-import com.lightbend.model.CurrentModelDescriptor;
+import com.lightbend.model.ModelToServe;
 import com.lightbend.model.Model;
 import com.lightbend.model.ModelFactory;
 
@@ -16,7 +16,7 @@ public class PMMLModelFactory implements ModelFactory {
     private PMMLModelFactory(){}
 
     @Override
-    public Optional<Model> create(CurrentModelDescriptor descriptor) {
+    public Optional<Model> create(ModelToServe descriptor) {
         try{
             return Optional.of(new PMMLModel(descriptor.getModelData()));
         }

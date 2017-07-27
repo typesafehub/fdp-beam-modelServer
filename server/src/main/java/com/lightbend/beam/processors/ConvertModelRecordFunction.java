@@ -1,6 +1,6 @@
 package com.lightbend.beam.processors;
 
-import com.lightbend.model.CurrentModelDescriptor;
+import com.lightbend.model.ModelToServe;
 import com.lightbend.model.DataWithModel;
 import com.lightbend.model.Modeldescriptor;
 import org.apache.beam.sdk.transforms.DoFn;
@@ -18,7 +18,7 @@ public class ConvertModelRecordFunction extends DoFn<KV<byte[], byte[]>, KV<Stri
             Modeldescriptor.ModelDescriptor model = Modeldescriptor.ModelDescriptor.parseFrom(input.getValue());
             // Return it
             if(model.getMessageContentCase().equals(Modeldescriptor.ModelDescriptor.MessageContentCase.DATA)){
-                ctx.output(KV.of(model.getDataType(), new DataWithModel(new CurrentModelDescriptor(
+                ctx.output(KV.of(model.getDataType(), new DataWithModel(new ModelToServe(
                         model.getName(), model.getDescription(), model.getModeltype(),
                         model.getData().toByteArray(), null, model.getDataType()))));
             }

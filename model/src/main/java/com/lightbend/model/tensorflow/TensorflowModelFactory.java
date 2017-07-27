@@ -1,6 +1,6 @@
 package com.lightbend.model.tensorflow;
 
-import com.lightbend.model.CurrentModelDescriptor;
+import com.lightbend.model.ModelToServe;
 import com.lightbend.model.Model;
 import com.lightbend.model.ModelFactory;
 
@@ -14,7 +14,7 @@ public class TensorflowModelFactory implements ModelFactory {
     private static TensorflowModelFactory instance = null;
 
     @Override
-    public Optional<Model> create(CurrentModelDescriptor descriptor) {
+    public Optional<Model> create(ModelToServe descriptor) {
 
         try{
             return Optional.of(new TensorflowModel(descriptor.getModelData()));

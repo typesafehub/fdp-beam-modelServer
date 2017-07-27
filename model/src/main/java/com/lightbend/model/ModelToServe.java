@@ -3,7 +3,7 @@ package com.lightbend.model;
 import java.io.Serializable;
 
 // Intermediate model representation used for transporting models
-public class CurrentModelDescriptor implements Serializable {
+public class ModelToServe implements Serializable {
 
     private String name;
     private String description;
@@ -12,8 +12,8 @@ public class CurrentModelDescriptor implements Serializable {
     private String modelDataLocation;
     private String dataType;
 
-    public CurrentModelDescriptor(String name, String description, Modeldescriptor.ModelDescriptor.ModelType modelType,
-                                  byte[] dataContent, String modelDataLocation, String dataType){
+    public ModelToServe(String name, String description, Modeldescriptor.ModelDescriptor.ModelType modelType,
+                        byte[] dataContent, String modelDataLocation, String dataType){
         this.name = name;
         this.description = description;
         this.modelType = modelType;
