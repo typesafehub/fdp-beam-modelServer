@@ -8,7 +8,7 @@ The basic idea behind this implementation is fairly straightforward - there are 
 -**Model Stream** - Kafka stream delivering models as protobuf buffer (example, modeldescriptor.proto)
 
 The overall implementation that brings together both streams and then processes
-every input of this stream. It is also using state (as described at https://beam.apache.org/blog/2017/02/13/stateful-processing.html)
+every input of this stream. It is also using [state](https://beam.apache.org/blog/2017/02/13/stateful-processing.html)
 to store an intermediate value of the model.
 
 This project contains the following modules:
@@ -26,5 +26,5 @@ Reads data files, split them into records, converts to protobuf implementations 
 -**configuration** - simple module containing class with Kafka definitions - server location,
 topics, etc. used by all applications
 
--**server** - implementation of model scoring using Beam
+-**server** - implementation of model scoring using Beam. Both Java and Scala implementations are provided.
 

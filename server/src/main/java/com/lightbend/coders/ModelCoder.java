@@ -25,13 +25,10 @@ import com.lightbend.model.tensorflow.TensorflowModel;
 import com.lightbend.model.tensorflow.TensorflowModelFactory;
 import org.apache.beam.sdk.coders.AtomicCoder;
 import org.apache.beam.sdk.coders.CoderException;
-import org.apache.beam.sdk.util.ExposedByteArrayOutputStream;
-import org.apache.beam.sdk.util.StreamUtils;
 import org.apache.beam.sdk.util.VarInt;
 import org.apache.beam.sdk.values.TypeDescriptor;
 
 import java.io.*;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -82,17 +79,12 @@ public class ModelCoder extends AtomicCoder<Model> {
 
   private ModelCoder() {}
 
-  @Override
-  public void encode(Model value, OutputStream outStream)
-          throws IOException {
-    encode(value, outStream, Context.NESTED);
-  }
 
   @Override
-  public void encode(Model value, OutputStream outStream, Context context) throws IOException {
+  public void encode(Model value, OutputStream outStream) throws IOException {
     if (value == null)
       throw new CoderException("cannot encode a null model");
-    if (context.isWholeStream) {
+/*    if (context.isWholeStream) {
       byte[] bytes = value.getBytes();
       byte[] types = ByteUtils.longToBytes(value.getType());
       if (outStream instanceof ExposedByteArrayOutputStream) {
@@ -102,19 +94,14 @@ public class ModelCoder extends AtomicCoder<Model> {
         outStream.write(bytes);
         outStream.write(types);
       }
-    } else {
+    } else { */
       writeModel(value, new DataOutputStream(outStream));
-    }
+//    }
   }
 
   @Override
   public Model decode(InputStream inStream) throws IOException {
-    return decode(inStream, Context.NESTED);
-  }
-
-  @Override
-  public Model decode(InputStream inStream, Context context) throws IOException {
-    if (context.isWholeStream) {
+/*    if (context.isWholeStream) {
       byte[] bytes = StreamUtils.getBytes(inStream);
       int type = (int)ByteUtils.bytesToLong(StreamUtils.getBytes(inStream));
       ModelFactory factory = factories.get(type);
@@ -123,7 +110,7 @@ public class ModelCoder extends AtomicCoder<Model> {
         return null;
       }
       return factory.restore(bytes);
-    } else {
+    } else {*/
       try {
         return readModel(new DataInputStream(inStream));
       } catch (EOFException | UTFDataFormatException exn) {
@@ -131,7 +118,7 @@ public class ModelCoder extends AtomicCoder<Model> {
         // what kind of exception they're branded as.
         throw new CoderException(exn);
       }
-    }
+//    }
   }
 
   @Override
@@ -167,7 +154,7 @@ public class ModelCoder extends AtomicCoder<Model> {
     int size = value.getBytes().length;
     return VarInt.getLength((long) size) + VarInt.getLength(value.getType()) + size;
   }
-
+/*
   public static class ByteUtils {
     private static ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
 
@@ -181,5 +168,5 @@ public class ModelCoder extends AtomicCoder<Model> {
       buffer.flip();//need flip
       return buffer.getLong();
     }
-  }
+  } */
 }

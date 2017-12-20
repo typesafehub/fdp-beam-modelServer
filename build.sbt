@@ -14,7 +14,7 @@ lazy val protobufs = (project in file("./protobufs"))
   )
 
 lazy val client = (project in file("./client"))
-  .settings(libraryDependencies ++= Dependencies.kafkaDependencies)
+  .settings(libraryDependencies ++= Dependencies.kafkaDependencies ++ Seq(Dependencies.curator))
   .dependsOn(protobufs, configuration)
 
 lazy val model = (project in file("./model"))

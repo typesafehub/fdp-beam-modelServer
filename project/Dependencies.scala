@@ -13,8 +13,9 @@ object Dependencies {
   val beamAPI       = "org.apache.beam"   % "beam-sdks-common-fn-api"                 % beamVersion
 
 
-  val kafka         = "org.apache.kafka"  % "kafka_2.11"                              % kafkaVersion
+  val kafka         = "org.apache.kafka"  % "kafka_2.10"                              % kafkaVersion
   val kafkaclients  = "org.apache.kafka"  % "kafka-clients"                           % kafkaVersion
+  val curator       = "org.apache.curator"              % "curator-test"              % CuratorVersion                 // ApacheV2
 
 
   val tensorflow    = "org.tensorflow"    % "tensorflow"                              % tensorflowVersion
