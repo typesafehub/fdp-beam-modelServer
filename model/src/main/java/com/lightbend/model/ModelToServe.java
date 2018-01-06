@@ -1,9 +1,22 @@
 package com.lightbend.model;
 
+import com.lightbend.model.PMML.PMMLModelFactory;
+import com.lightbend.model.tensorflow.TensorflowModelFactory;
+
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 // Intermediate model representation used for transporting models
 public class ModelToServe implements Serializable {
+
+    private static final Map<Integer, ModelFactory> factories = new HashMap<Integer, ModelFactory>() {
+        {
+            put(Modeldescriptor.ModelDescriptor.ModelType.TENSORFLOW.getNumber(), TensorflowModelFactory.getInstance());
+            put(Modeldescriptor.ModelDescriptor.ModelType.PMML.getNumber(), PMMLModelFactory.getInstance());
+        }
+    };
 
     private String name;
     private String description;
@@ -54,5 +67,23 @@ public class ModelToServe implements Serializable {
                 ", modelType=" + modelType +
                 ", dataType='" + dataType + '\'' +
                 '}';
+    }
+
+    public static Model restore(int type, byte[] bytes){
+        ModelFactory factory = factories.get(type);
+        if (factory == null) {
+            System.out.println("Unknown model type " + type);
+            return null;
+        }
+        return factory.restore(bytes);
+    }
+
+    public static Optional<Model> create(ModelToServe descriptor){
+        ModelFactory factory = factories.get(descriptor.getModelType().ordinal());
+        if (factory == null) {
+            System.out.println("Unknown model type " + descriptor.getModelType());
+            return Optional.empty();
+        }
+        return factory.create(descriptor);
     }
 }

@@ -49,7 +49,7 @@ object JobConfiguration {
     * @return the pipeline
     */
   def initializePipeline(args: Array[String]): KafkaOptions = {
-    val options: KafkaOptions = PipelineOptionsFactory.fromArgs(args:_*).as(classOf[KafkaOptions])
+    val options = PipelineOptionsFactory.fromArgs(args:_*).as(classOf[KafkaOptions])
     // Use Flink runner
     options.setRunner(classOf[FlinkRunner])
     // Set job name

@@ -1,7 +1,5 @@
 package com.lightbend.modelServer.model
 
-import java.io._
-
 import com.lightbend.model.modeldescriptor.ModelDescriptor
 import com.lightbend.model.winerecord.WineRecord
 
@@ -16,11 +14,6 @@ import scala.util.Try
  */
 object ModelToServe {
   private val factories = Map(
-    ModelDescriptor.ModelType.PMML.name -> PMMLModel,
-    ModelDescriptor.ModelType.TENSORFLOW.name -> TensorFlowModel
-  )
-
-  private val factoriesInt = Map(
     ModelDescriptor.ModelType.PMML.index -> PMMLModel,
     ModelDescriptor.ModelType.TENSORFLOW.index -> TensorFlowModel
   )
@@ -35,13 +28,13 @@ object ModelToServe {
 
   def fromModelToServe(descriptor : ModelToServe): Try[Model] = Try{
     println(s"New model - $descriptor")
-    factories.get(descriptor.modelType.name) match {
+    factories.get(descriptor.modelType.value) match {
       case Some(factory) => factory.create(descriptor)
       case _ => throw new Throwable("Undefined model type")
     }
   }
 
-  def factoryOrdinal(ordinal : Int) : Option[ModelFactory] = factoriesInt.get(ordinal)
+  def factoryOrdinal(ordinal : Int) : Option[ModelFactory] = factories.get(ordinal)
 }
 
 case class ModelToServe(name: String, description: String,

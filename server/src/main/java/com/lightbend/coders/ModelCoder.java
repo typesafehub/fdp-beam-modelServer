@@ -18,31 +18,20 @@
 package com.lightbend.coders;
 
 import com.lightbend.model.Model;
-import com.lightbend.model.ModelFactory;
-import com.lightbend.model.Modeldescriptor;
-import com.lightbend.model.PMML.PMMLModelFactory;
+import com.lightbend.model.ModelToServe;
 import com.lightbend.model.tensorflow.TensorflowModel;
-import com.lightbend.model.tensorflow.TensorflowModelFactory;
 import org.apache.beam.sdk.coders.AtomicCoder;
 import org.apache.beam.sdk.coders.CoderException;
 import org.apache.beam.sdk.util.VarInt;
 import org.apache.beam.sdk.values.TypeDescriptor;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * A {@link ModelCoder} encodes a {@link TensorflowModel}
  */
 public class ModelCoder extends AtomicCoder<Model> {
 
-  private static final Map<Integer, ModelFactory> factories = new HashMap<Integer, ModelFactory>() {
-    {
-      put(Modeldescriptor.ModelDescriptor.ModelType.TENSORFLOW.getNumber(), TensorflowModelFactory.getInstance());
-      put(Modeldescriptor.ModelDescriptor.ModelType.PMML.getNumber(), PMMLModelFactory.getInstance());
-    }
-  };
   public static ModelCoder of() {
     return INSTANCE;
   }
@@ -69,12 +58,7 @@ public class ModelCoder extends AtomicCoder<Model> {
     byte[] bytes = new byte[len];
     dis.readFully(bytes);
     int type = (int)VarInt.decodeLong(dis);
-    ModelFactory factory = factories.get(type);
-    if (factory == null) {
-      System.out.println("Unknown model type " + type);
-      return null;
-    }
-    return factory.restore(bytes);
+    return ModelToServe.restore(type, bytes);
   }
 
   private ModelCoder() {}
@@ -84,41 +68,18 @@ public class ModelCoder extends AtomicCoder<Model> {
   public void encode(Model value, OutputStream outStream) throws IOException {
     if (value == null)
       throw new CoderException("cannot encode a null model");
-/*    if (context.isWholeStream) {
-      byte[] bytes = value.getBytes();
-      byte[] types = ByteUtils.longToBytes(value.getType());
-      if (outStream instanceof ExposedByteArrayOutputStream) {
-         ((ExposedByteArrayOutputStream) outStream).writeAndOwn(bytes);
-         ((ExposedByteArrayOutputStream) outStream).writeAndOwn(types);
-      } else {
-        outStream.write(bytes);
-        outStream.write(types);
-      }
-    } else { */
-      writeModel(value, new DataOutputStream(outStream));
-//    }
+    writeModel(value, new DataOutputStream(outStream));
   }
 
   @Override
   public Model decode(InputStream inStream) throws IOException {
-/*    if (context.isWholeStream) {
-      byte[] bytes = StreamUtils.getBytes(inStream);
-      int type = (int)ByteUtils.bytesToLong(StreamUtils.getBytes(inStream));
-      ModelFactory factory = factories.get(type);
-      if (factory == null) {
-        System.out.println("Unknown model type " + type);
-        return null;
-      }
-      return factory.restore(bytes);
-    } else {*/
-      try {
-        return readModel(new DataInputStream(inStream));
-      } catch (EOFException | UTFDataFormatException exn) {
-        // These exceptions correspond to decoding problems, so change
-        // what kind of exception they're branded as.
-        throw new CoderException(exn);
-      }
-//    }
+    try {
+      return readModel(new DataInputStream(inStream));
+    } catch (EOFException | UTFDataFormatException exn) {
+      // These exceptions correspond to decoding problems, so change
+      // what kind of exception they're branded as.
+      throw new CoderException(exn);
+    }
   }
 
   @Override
@@ -154,19 +115,4 @@ public class ModelCoder extends AtomicCoder<Model> {
     int size = value.getBytes().length;
     return VarInt.getLength((long) size) + VarInt.getLength(value.getType()) + size;
   }
-/*
-  public static class ByteUtils {
-    private static ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
-
-    public static byte[] longToBytes(long x) {
-      buffer.putLong(0, x);
-      return buffer.array();
-    }
-
-    public static long bytesToLong(byte[] bytes) {
-      buffer.put(bytes, 0, bytes.length);
-      buffer.flip();//need flip
-      return buffer.getLong();
-    }
-  } */
 }

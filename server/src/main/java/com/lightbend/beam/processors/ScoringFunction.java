@@ -1,29 +1,20 @@
 package com.lightbend.beam.processors;
 
 import com.lightbend.coders.ModelCoder;
-import com.lightbend.model.*;
-import com.lightbend.model.PMML.PMMLModelFactory;
-import com.lightbend.model.tensorflow.TensorflowModelFactory;
+import com.lightbend.model.DataWithModel;
+import com.lightbend.model.Model;
+import com.lightbend.model.ModelToServe;
 import org.apache.beam.sdk.state.StateSpec;
 import org.apache.beam.sdk.state.StateSpecs;
 import org.apache.beam.sdk.state.ValueState;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.values.KV;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 
 // Based on https://beam.apache.org/blog/2017/02/13/stateful-processing.html
 public class ScoringFunction extends DoFn<KV<String,DataWithModel>, Double> {
-
-    private static final Map<Integer, ModelFactory> factories = new HashMap<Integer, ModelFactory>() {
-        {
-            put(Modeldescriptor.ModelDescriptor.ModelType.TENSORFLOW.getNumber(), TensorflowModelFactory.getInstance());
-            put(Modeldescriptor.ModelDescriptor.ModelType.PMML.getNumber(), PMMLModelFactory.getInstance());
-        }
-    };
 
     // Internal state
     @StateId("model")
@@ -40,19 +31,14 @@ public class ScoringFunction extends DoFn<KV<String,DataWithModel>, Double> {
         if (descriptor != null) {
             // Process model - store it
             System.out.println("New scoring model " + descriptor);
-            ModelFactory factory = factories.get(descriptor.getModelType().ordinal());
-            if (factory == null)
-                System.out.println("Unknown model type " + descriptor.getModelType());
-            else {
-                Optional<Model> current = factory.create(descriptor);
-                if (current.isPresent()) {
-                    if (model != null)
-                        model.cleanup();
-                    // Create and store the model
-                    modelState.write(current.get());
-                } else
-                    System.out.println("Error converting model Descriptor" + descriptor);
-            }
+            Optional<Model> current = ModelToServe.create(descriptor);
+            if (current.isPresent()) {
+                if (model != null)
+                    model.cleanup();
+                // Create and store the model
+                modelState.write(current.get());
+            } else
+                System.out.println("Error converting model Descriptor" + descriptor);
         }
         // Process data
         else {

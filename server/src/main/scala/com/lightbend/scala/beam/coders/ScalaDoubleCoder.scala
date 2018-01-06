@@ -11,13 +11,9 @@ class ScalaDoubleCoder extends AtomicCoder[Double] {
   import ScalaDoubleCoder._
 
   @throws[IOException]
-  @throws[CoderException]
-  override def encode(value: Double, outStream: OutputStream): Unit = {
-    if (value == null) throw new CoderException("cannot encode a null Double")
-    new DataOutputStream(outStream).writeDouble(value)
-  }
+  override def encode(value: Double, outStream: OutputStream): Unit =
+     new DataOutputStream(outStream).writeDouble(value)
 
-  @throws[IOException]
   @throws[CoderException]
   override def decode(inStream: InputStream): Double = try
     new DataInputStream(inStream).readDouble
@@ -39,11 +35,7 @@ class ScalaDoubleCoder extends AtomicCoder[Double] {
 
   override def getEncodedTypeDescriptor: TypeDescriptor[Double] = TYPE_DESCRIPTOR
 
-  @throws[Exception]
-  override protected def getEncodedElementByteSize(value: Double): Long = {
-    if (value == null) throw new CoderException("cannot encode a null Double")
-    8
-  }
+  override protected def getEncodedElementByteSize(value: Double): Long = 8
 
 }
 
